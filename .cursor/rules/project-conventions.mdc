@@ -1,0 +1,42 @@
+---
+description: Tools 仓库协作约定：Git 中文规范、README/run.bat/requirements 联动
+alwaysApply: true
+---
+
+# Tools 仓库约定
+
+完整说明见仓库根目录 `AGENTS.md`。以下为必须遵守的要点。
+
+## 功能变更联动
+
+新增或修改工具功能时，**同时更新**：
+
+1. `README.md` — 功能、依赖、用法
+2. `run.bat` — 菜单项与启动命令（若该工具通过菜单运行）
+3. `requirements.txt` — 新增/变更第三方依赖时同步包名、版本与注释
+
+## Git 提交（中文 + Conventional Commits）
+
+```text
+<type>(<scope>): <中文简述>
+
+<可选正文>
+```
+
+- **type**: `feat` | `fix` | `docs` | `refactor` | `test` | `chore`
+- **scope**: 工具名或目录，如 `serial`、`wav`、`lvgl`
+- 标题一行概括变更；正文说明原因与影响
+- 功能与文档、`run.bat`、`requirements.txt` 同一任务应同一提交内完成
+- 仅用户明确要求时才 `commit` / `push`；不提交 `serial_logs/` 等运行时产物
+
+示例：
+
+```text
+feat(serial): 添加交互式串口与波特率选择
+
+同步更新 README、run.bat 与 requirements.txt。
+```
+
+## 代码
+
+最小改动、匹配现有风格；未要求不扩 scope、不加无关测试。
