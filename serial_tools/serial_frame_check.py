@@ -7,7 +7,7 @@
     +DT=<len>,<payload>\r\n
 串口是字节流，电脑一次 read() 读到半帧、粘包都正常；本脚本按长度字段重新组帧。
 先安装：py -m pip install pyserial
-使用时直接修改下面“配置区”，然后运行：py serial_tools/serial_frame_check.py
+运行时从列表选择串口与波特率；其他参数可在下面“配置区”修改，然后运行：py serial_tools/serial_frame_check.py
 """
 
 from __future__ import annotations
@@ -23,8 +23,12 @@ from datetime import datetime
 from typing import Optional
 
 # ============================== 配置区 ==============================
-PORT = "COM7"
-BAUD = 230400
+# 串口与波特率在运行时由用户从列表选择
+PORT = ""
+BAUD = 0
+
+COMMON_BAUDS = (9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600)
+DEFAULT_BAUD = 230400
 BYTESIZE = 8
 PARITY = "N"
 STOPBITS = 1
@@ -218,6 +222,57 @@ class Comparator:
         return {"status": "SEQ_JUMP", "seq": seq, "expected_seq": expect}
 
 
+def _prompt_index(prompt: str, count: int, default: int) -> int:
+    while True:
+        raw = input(f"{prompt} [1-{count}, 默认 {default}]: ").strip()
+        if not raw:
+            return default
+        try:
+            idx = int(raw)
+        except ValueError:
+            print(f"请输入 1 到 {count} 之间的序号")
+            continue
+        if 1 <= idx <= count:
+            return idx
+        print(f"请输入 1 到 {count} 之间的序号")
+
+
+def prompt_serial_settings() -> Optional[tuple[str, int]]:
+    """列出可用串口与常用波特率，用户输入序号选择。无可用串口时返回 None。"""
+    try:
+        from serial.tools import list_ports  # type: ignore
+    except ImportError:
+        print("pyserial 未安装，请先执行: py -m pip install pyserial")
+        raise
+
+    ports = list(list_ports.comports())
+    if not ports:
+        print("未检测到可用串口，请检查连接后重试。")
+        return None
+
+    print("\n可用串口:")
+    for i, p in enumerate(ports, 1):
+        desc = p.description or ""
+        hwid = p.hwid or ""
+        extra = f"  {desc}" if desc else ""
+        if hwid:
+            extra += f"  ({hwid})"
+        print(f"  {i}. {p.device}{extra}")
+
+    port_idx = _prompt_index("选择串口序号", len(ports), 1)
+    port = ports[port_idx - 1].device
+
+    print("\n常用波特率:")
+    default_baud_idx = next((i for i, b in enumerate(COMMON_BAUDS, 1) if b == DEFAULT_BAUD), 1)
+    for i, baud in enumerate(COMMON_BAUDS, 1):
+        mark = "  <-- 默认" if baud == DEFAULT_BAUD else ""
+        print(f"  {i}. {baud}{mark}")
+
+    baud_idx = _prompt_index("选择波特率序号", len(COMMON_BAUDS), default_baud_idx)
+    baud = COMMON_BAUDS[baud_idx - 1]
+    return port, baud
+
+
 def open_serial():
     try:
         import serial  # type: ignore
@@ -344,6 +399,13 @@ def parse_loop(rxq: "queue.Queue[bytes]"):
 
 
 def main() -> int:
+    global PORT, BAUD
+    settings = prompt_serial_settings()
+    if settings is None:
+        return 0
+    PORT, BAUD = settings
+    print(f"使用串口 {PORT}，波特率 {BAUD}")
+
     if not PREFIX or not SEP or not TAIL:
         print("配置错误：PREFIX/SEP/TAIL 不能为空")
         return 2
@@ -374,4 +436,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit_code = main()
+    if exit_code != 0:
+        sys.exit(exit_code)
