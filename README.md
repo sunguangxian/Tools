@@ -50,9 +50,9 @@ len("+DT=320,") + 320 + len("\r\n") = 330 bytes
 ### 主要功能
 - **长度组帧校验**: 自动处理半帧、粘包、前导垃圾字节，并按长度字段提取完整 payload。
 - **接收线程**: 默认启用独立 RX 线程，避免打印日志、写文件或数据对比阻塞串口读取。
-- **日志记录**: 输出系统时间、相对时间、帧间隔、CRC32、前几个字节、`dropped` 和 `bad` 统计。
+- **日志记录**: 输出系统时间、相对时间、帧间隔、CRC32、前几个字节、`dropped` 和 `bad` 统计。帧间隔 `dt` 按串口 `read()` 收包时刻计算；若 payload 含设备 tick（如 `ict_hw_get_time_us()`），另输出 `dev_dt` 反映设备侧发包间隔。
 - **CSV 输出**: 自动生成 CSV，方便用 Excel 或脚本分析帧间隔、错误数量和对比结果。
-- **数据对比**: 支持 `none`、`first`、`file_loop`、`file_seq`、`seq` 五种对比模式。
+- **数据对比**: 支持 `none`、`first`、`file_loop`、`file_seq`、`seq` 五种对比模式。`seq` 模式可配合 `FIXED_TAIL_SKIP` 跳过帧号后比对固定 payload（如 DT PCM 正弦填充区）。
 - **协议可配置**: 默认检测 `+DT=`，也可以通过修改脚本顶部配置检测 `+PCM=`、`+DATA=` 等类似协议。
 
 ### 使用方法
@@ -70,6 +70,18 @@ BAUD = 230400
 PREFIX = b"+DT="
 EXPECT_LEN = 320
 COMPARE_MODE = "none"
+# seq 模式示例（前 4 字节 uint32 帧号 + 固定正弦数据）：
+# COMPARE_MODE = "seq"
+# SEQ_OFFSET = 0
+# SEQ_SIZE = 4
+# SEQ_ENDIAN = "little"
+# FIXED_TAIL_SKIP = 4
+# 设备 tick（offset 4，uint32 us）示例：
+# DEV_TICK_OFFSET = 4
+# DEV_TICK_SIZE = 4
+# DEV_TICK_ENDIAN = "little"
+# DEV_TICK_UNIT = "ms"
+# FIXED_TAIL_SKIP = 8
 ```
 
 运行：
@@ -83,6 +95,8 @@ py serial_tools/serial_frame_check.py
 - `bad` 或 `dropped` 持续增加，说明字节流确实有格式错误、丢字节、波特率/线材/电平/流控等问题。
 - 偶尔或持续 `LEN_BAD`，优先确认脚本里的 `EXPECT_LEN` 是否和设备端 `PCM_FRAME_SIZE` 一致。
 - 如果启用 `seq` 或 `file_seq` 对比后出现跳变/错位，说明可能存在丢帧、重复帧、漏收或参考数据不一致。
+- `seq` + `FIXED_TAIL_SKIP` 时出现 `DIFF` 或 `SEQ_JUMP+DIFF`，说明序号区之后的 payload 与首帧不一致（发送内容变化或字节错位）。
+- `dev_dt` 接近 `EXPECT_INTERVAL_MS` 而 `dt` 偏大，说明设备定时正常、PC 收包节奏偏慢（调试器、打印、USB 批处理等）；`dev_interval=WARN` 则优先查设备定时。
 
 ---
 

@@ -55,17 +55,26 @@ EXPECT_INTERVAL_MS: Optional[float] = 20.0
 INTERVAL_TOLERANCE_MS = 5.0
 
 # 数据对比模式：none / first / file_loop / file_seq / seq
-COMPARE_MODE = "none"
+COMPARE_MODE = "seq"
 REF_FILE = "ref_payload.bin"
 REF_LOOP = True
 SEQ_OFFSET = 0
 SEQ_SIZE = 4               # 1/2/4/8
 SEQ_ENDIAN = "little"      # little/big
 SEQ_STEP = 1
+FIXED_TAIL_SKIP = 8        # 跳过 index(4)+tick(4) 后与首帧比对；0=不比对
+# 设备 tick 写入 payload offset 4（uint32）；None=禁用
+DEV_TICK_OFFSET: Optional[int] = 4
+DEV_TICK_SIZE = 4          # 1/2/4/8
+DEV_TICK_ENDIAN = "little" # little/big
+DEV_TICK_UNIT = "ms"       # us / ms（tick 相邻帧差约 20 时用 ms；若为 us 则差约 20000）
+INTERVAL_SUMMARY_EVERY = 50 # 每 N 帧打印 dt / dev_dt 平均间隔
+INTERVAL_WARN_MIN_DT_MS = 0.5 # 同一次 read 批处理 dt≈0 时不报 interval=WARN
 # ====================================================================
 
 STOP = threading.Event()
 START_MONO = time.monotonic()
+START_WALL = time.time()
 
 
 def now() -> str:
@@ -74,6 +83,14 @@ def now() -> str:
 
 def rel_ms() -> float:
     return (time.monotonic() - START_MONO) * 1000.0
+
+
+def mono_to_now_str(mono: float) -> str:
+    return datetime.fromtimestamp(START_WALL + (mono - START_MONO)).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+
+def mono_to_rel_ms(mono: float) -> float:
+    return (mono - START_MONO) * 1000.0
 
 
 def hex_head(data: bytes, n: int = PAYLOAD_HEAD_BYTES) -> str:
@@ -90,14 +107,65 @@ def first_diff(ref: bytes, cur: bytes):
     return None, None, None
 
 
+def parse_dev_tick(payload: bytes) -> Optional[int]:
+    if DEV_TICK_OFFSET is None:
+        return None
+    if DEV_TICK_SIZE not in (1, 2, 4, 8):
+        return None
+    if DEV_TICK_OFFSET + DEV_TICK_SIZE > len(payload):
+        return None
+    return int.from_bytes(payload[DEV_TICK_OFFSET:DEV_TICK_OFFSET + DEV_TICK_SIZE], DEV_TICK_ENDIAN)
+
+
+def dev_tick_delta(cur: int, last: int) -> int:
+    mask = (1 << (DEV_TICK_SIZE * 8)) - 1
+    return (cur - last) & mask
+
+
+def dev_tick_delta_to_ms(delta: int) -> float:
+    if DEV_TICK_UNIT == "ms":
+        return float(delta)
+    return delta / 1000.0
+
+
+def effective_fixed_tail_skip() -> int:
+    if FIXED_TAIL_SKIP <= 0:
+        return 0
+    skip = FIXED_TAIL_SKIP
+    if DEV_TICK_OFFSET is not None:
+        tick_end = DEV_TICK_OFFSET + DEV_TICK_SIZE
+        if skip < tick_end:
+            skip = tick_end
+    return skip
+
+
 class LengthParser:
     def __init__(self):
         self.buf = bytearray()
         self.dropped = 0
         self.bad = 0
+        self._chunk_ends: list[tuple[int, float]] = []
 
-    def feed(self, data: bytes):
+    def feed(self, data: bytes, rx_mono: float):
         self.buf.extend(data)
+        self._chunk_ends.append((len(self.buf), rx_mono))
+
+    def _mono_at_offset(self, end_exclusive: int) -> float:
+        for chunk_end, mono in self._chunk_ends:
+            if chunk_end >= end_exclusive:
+                return mono
+        return self._chunk_ends[-1][1] if self._chunk_ends else time.monotonic()
+
+    def _discard_buf_prefix(self, n: int):
+        if n <= 0:
+            return
+        del self.buf[:n]
+        new_ends: list[tuple[int, float]] = []
+        for end, mono in self._chunk_ends:
+            adj = end - n
+            if adj > 0:
+                new_ends.append((adj, mono))
+        self._chunk_ends = new_ends
 
     def parse_one(self):
         """返回 (kind, info)。kind: frame / need_more / dropped / bad。"""
@@ -111,12 +179,12 @@ class LengthParser:
             if len(self.buf) <= keep:
                 return "need_more", None
             n = len(self.buf) - keep
-            del self.buf[:n]
+            self._discard_buf_prefix(n)
             self.dropped += n
             return "dropped", ("NO_PREFIX", n)
 
         if pos > 0:
-            del self.buf[:pos]
+            self._discard_buf_prefix(pos)
             self.dropped += pos
             return "dropped", ("DROP_BEFORE_PREFIX", pos)
 
@@ -127,7 +195,7 @@ class LengthParser:
         len_bytes = bytes(self.buf[len(PREFIX):sep_pos])
         if not len_bytes or not len_bytes.isdigit():
             ctx = bytes(self.buf[:BAD_CONTEXT_BYTES])
-            del self.buf[:1]
+            self._discard_buf_prefix(1)
             self.bad += 1
             return "bad", ("BAD_LEN_FIELD", ctx)
 
@@ -138,14 +206,15 @@ class LengthParser:
 
         if bytes(self.buf[total - len(TAIL):total]) != TAIL:
             ctx = bytes(self.buf[:min(len(self.buf), total + BAD_CONTEXT_BYTES)])
-            del self.buf[:1]
+            self._discard_buf_prefix(1)
             self.bad += 1
             return "bad", ("BAD_TAIL", ctx)
 
         start = sep_pos + len(SEP)
         payload = bytes(self.buf[start:start + payload_len])
-        del self.buf[:total]
-        return "frame", (payload_len, payload, total)
+        frame_rx_mono = self._mono_at_offset(total)
+        self._discard_buf_prefix(total)
+        return "frame", (payload_len, payload, total, frame_rx_mono)
 
 
 class Comparator:
@@ -154,6 +223,7 @@ class Comparator:
         self.ref: Optional[bytes] = None
         self.ref_pos = 0
         self.last_seq: Optional[int] = None
+        self._fixed_tail_ref: Optional[bytes] = None
         if COMPARE_MODE in ("file_loop", "file_seq"):
             with open(REF_FILE, "rb") as f:
                 self.ref = f.read()
@@ -211,15 +281,42 @@ class Comparator:
     def _cmp_seq(self, payload: bytes):
         if SEQ_SIZE not in (1, 2, 4, 8) or SEQ_OFFSET + SEQ_SIZE > len(payload):
             return {"status": "BAD_CFG", "detail": "invalid seq config"}
+        tail_skip = effective_fixed_tail_skip()
+        if tail_skip > 0 and tail_skip >= len(payload):
+            return {"status": "BAD_CFG", "detail": "FIXED_TAIL_SKIP too large"}
         seq = int.from_bytes(payload[SEQ_OFFSET:SEQ_OFFSET + SEQ_SIZE], SEQ_ENDIAN)
         if self.last_seq is None:
             self.last_seq = seq
+            if tail_skip > 0:
+                self._fixed_tail_ref = payload[tail_skip:]
             return {"status": "REF_SET", "seq": seq}
         expect = self.last_seq + SEQ_STEP
         self.last_seq = seq
-        if seq == expect:
+        seq_ok = seq == expect
+
+        tail_bad = False
+        tail_info: dict = {}
+        if tail_skip > 0:
+            td = self._cmp_bytes(self._fixed_tail_ref, payload[tail_skip:])
+            if td["status"] != "OK":
+                tail_bad = True
+                off = td.get("diff_offset")
+                tail_info = {
+                    "diff_offset": off + tail_skip if off is not None else None,
+                    "ref_byte": td.get("ref_byte"),
+                    "cur_byte": td.get("cur_byte"),
+                }
+
+        if seq_ok and not tail_bad:
             return {"status": "OK", "seq": seq, "expected_seq": expect}
-        return {"status": "SEQ_JUMP", "seq": seq, "expected_seq": expect}
+        if not seq_ok and not tail_bad:
+            return {"status": "SEQ_JUMP", "seq": seq, "expected_seq": expect}
+        if seq_ok and tail_bad:
+            return {"status": "DIFF", "seq": seq, **tail_info}
+        out = {"status": "SEQ_JUMP+DIFF", "seq": seq, "expected_seq": expect}
+        if tail_bad:
+            out.update(tail_info)
+        return out
 
 
 def _prompt_index(prompt: str, count: int, default: int) -> int:
@@ -296,8 +393,9 @@ def rx_worker(rxq: "queue.Queue[bytes]"):
             data = ser.read(READ_SIZE)
             if not data:
                 continue
+            rx_mono = time.monotonic()
             try:
-                rxq.put(data, timeout=0.5)
+                rxq.put((data, rx_mono), timeout=0.5)
             except queue.Full:
                 print(f"{now()} RX_QUEUE_FULL drop_block len={len(data)}")
     finally:
@@ -314,7 +412,7 @@ def log_open():
     txt_fp = open(txt, "w", encoding="utf-8")
     csv_fp = open(csv_path, "w", encoding="utf-8", newline="")
     writer = csv.writer(csv_fp)
-    writer.writerow(["time", "rel_ms", "frame", "status", "len", "dt_ms", "crc32", "dropped", "bad", "compare", "diff_offset", "ref_byte", "cur_byte", "seq", "expected_seq", "first_bytes"])
+    writer.writerow(["time", "rel_ms", "frame", "status", "len", "dt_ms", "dev_tick", "dev_dt_ms", "crc32", "dropped", "bad", "compare", "diff_offset", "ref_byte", "cur_byte", "seq", "expected_seq", "first_bytes"])
     print(f"text log: {txt}")
     print(f"csv  log: {csv_path}")
     return txt_fp, csv_fp, writer
@@ -324,15 +422,18 @@ def bhex(v):
     return "" if v is None else f"0x{v:02X}"
 
 
-def handle_frame(frame_no, payload_len, payload, parser, cmp_ret, last_mono):
-    now_mono = time.monotonic()
-    dt_ms = None if last_mono is None else (now_mono - last_mono) * 1000.0
+def handle_frame(frame_no, payload_len, payload, parser, cmp_ret, last_rx_mono, rx_mono, dev_tick, dev_dt_ms):
+    dt_ms = None if last_rx_mono is None else (rx_mono - last_rx_mono) * 1000.0
     status = "OK" if payload_len == EXPECT_LEN else "LEN_BAD"
     crc32 = f"{binascii.crc32(payload) & 0xFFFFFFFF:08X}"
     warn = ""
-    if EXPECT_INTERVAL_MS is not None and dt_ms is not None:
+    if EXPECT_INTERVAL_MS is not None and dt_ms is not None and dt_ms >= INTERVAL_WARN_MIN_DT_MS:
         if abs(dt_ms - EXPECT_INTERVAL_MS) > INTERVAL_TOLERANCE_MS:
             warn = " interval=WARN"
+    dev_warn = ""
+    if EXPECT_INTERVAL_MS is not None and dev_dt_ms is not None and dev_dt_ms >= INTERVAL_WARN_MIN_DT_MS:
+        if abs(dev_dt_ms - EXPECT_INTERVAL_MS) > INTERVAL_TOLERANCE_MS:
+            dev_warn = " dev_interval=WARN"
     extra = ""
     if "diff_offset" in cmp_ret:
         extra += f" diff_offset={cmp_ret['diff_offset']} ref={bhex(cmp_ret.get('ref_byte'))} cur={bhex(cmp_ret.get('cur_byte'))}"
@@ -340,26 +441,35 @@ def handle_frame(frame_no, payload_len, payload, parser, cmp_ret, last_mono):
         extra += f" seq={cmp_ret['seq']}"
     if cmp_ret.get("expected_seq") is not None and cmp_ret.get("seq") != cmp_ret.get("expected_seq"):
         extra += f" expect_seq={cmp_ret['expected_seq']}"
-    line = (f"{now()} t={rel_ms():.1f}ms frame={frame_no} {status} len={payload_len}"
-            f"{'' if dt_ms is None else f' dt={dt_ms:.1f}ms'}{warn} first{PAYLOAD_HEAD_BYTES}={hex_head(payload)} "
+    dev_part = ""
+    if dev_tick is not None:
+        dev_part = f" dev_tick={dev_tick}"
+        if dev_dt_ms is not None:
+            dev_part += f" dev_dt={dev_dt_ms:.2f}ms{dev_warn}"
+    line = (f"{mono_to_now_str(rx_mono)} t={mono_to_rel_ms(rx_mono):.1f}ms frame={frame_no} {status} len={payload_len}"
+            f"{'' if dt_ms is None else f' dt={dt_ms:.1f}ms'}{warn}{dev_part} first{PAYLOAD_HEAD_BYTES}={hex_head(payload)} "
             f"crc32={crc32} dropped={parser.dropped} bad={parser.bad} cmp={cmp_ret['status']}{extra}")
-    return line, dt_ms, status, crc32, now_mono
+    return line, dt_ms, status, crc32, rx_mono
 
 
-def parse_loop(rxq: "queue.Queue[bytes]"):
+def parse_loop(rxq: "queue.Queue[tuple[bytes, float]]"):
     parser = LengthParser()
     cmpor = Comparator()
     txt_fp, csv_fp, writer = log_open()
     frame_no = 0
     len_bad = 0
-    last_mono = None
+    last_rx_mono = None
+    last_dev_tick: Optional[int] = None
+    summary_start_frame = 0
+    summary_start_rx_mono: Optional[float] = None
+    summary_start_dev_tick: Optional[int] = None
     try:
         while not STOP.is_set():
             try:
-                data = rxq.get(timeout=0.2)
+                data, rx_mono = rxq.get(timeout=0.2)
             except queue.Empty:
                 continue
-            parser.feed(data)
+            parser.feed(data, rx_mono)
             while not STOP.is_set():
                 kind, info = parser.parse_one()
                 if kind == "need_more":
@@ -377,10 +487,17 @@ def parse_loop(rxq: "queue.Queue[bytes]"):
                     if txt_fp: txt_fp.write(line + "\n"); txt_fp.flush()
                     continue
 
-                payload_len, payload, _total = info
+                payload_len, payload, _total, frame_rx_mono = info
                 frame_no += 1
                 cmp_ret = cmpor.check(payload)
-                line, dt_ms, status, crc32, last_mono = handle_frame(frame_no, payload_len, payload, parser, cmp_ret, last_mono)
+                dev_tick = parse_dev_tick(payload)
+                dev_dt_ms = None
+                if dev_tick is not None and last_dev_tick is not None:
+                    dev_dt_ms = dev_tick_delta_to_ms(dev_tick_delta(dev_tick, last_dev_tick))
+                if dev_tick is not None:
+                    last_dev_tick = dev_tick
+                line, dt_ms, status, crc32, last_rx_mono = handle_frame(
+                    frame_no, payload_len, payload, parser, cmp_ret, last_rx_mono, frame_rx_mono, dev_tick, dev_dt_ms)
                 if status != "OK":
                     len_bad += 1
                 need_print = PRINT_EVERY_N <= 1 or frame_no % PRINT_EVERY_N == 0 or status != "OK" or cmp_ret["status"] not in ("NA", "OK", "REF_SET")
@@ -389,8 +506,37 @@ def parse_loop(rxq: "queue.Queue[bytes]"):
                 if txt_fp:
                     txt_fp.write(line + "\n"); txt_fp.flush()
                 if writer:
-                    writer.writerow([now(), f"{rel_ms():.1f}", frame_no, status, payload_len, "" if dt_ms is None else f"{dt_ms:.3f}", crc32, parser.dropped, parser.bad, cmp_ret["status"], cmp_ret.get("diff_offset", ""), bhex(cmp_ret.get("ref_byte")), bhex(cmp_ret.get("cur_byte")), cmp_ret.get("seq", ""), cmp_ret.get("expected_seq", ""), hex_head(payload)])
+                    writer.writerow([
+                        mono_to_now_str(frame_rx_mono), f"{mono_to_rel_ms(frame_rx_mono):.1f}", frame_no, status, payload_len,
+                        "" if dt_ms is None else f"{dt_ms:.3f}",
+                        "" if dev_tick is None else dev_tick,
+                        "" if dev_dt_ms is None else f"{dev_dt_ms:.3f}",
+                        crc32, parser.dropped, parser.bad, cmp_ret["status"],
+                        cmp_ret.get("diff_offset", ""), bhex(cmp_ret.get("ref_byte")), bhex(cmp_ret.get("cur_byte")),
+                        cmp_ret.get("seq", ""), cmp_ret.get("expected_seq", ""), hex_head(payload),
+                    ])
                     csv_fp.flush()
+                if INTERVAL_SUMMARY_EVERY > 0 and frame_no % INTERVAL_SUMMARY_EVERY == 0 and summary_start_rx_mono is not None:
+                    n = frame_no - summary_start_frame
+                    avg_dt = (frame_rx_mono - summary_start_rx_mono) * 1000.0 / n
+                    dev_part = ""
+                    if dev_tick is not None and summary_start_dev_tick is not None:
+                        dev_span = dev_tick_delta(dev_tick, summary_start_dev_tick)
+                        avg_dev = dev_tick_delta_to_ms(dev_span) / n
+                        dev_part = f" avg_dev_dt={avg_dev:.1f}ms"
+                    sum_line = (f"{mono_to_now_str(frame_rx_mono)} STATS frames={INTERVAL_SUMMARY_EVERY} "
+                                f"avg_dt={avg_dt:.1f}ms fps={1000.0 / avg_dt:.1f}{dev_part}")
+                    print(sum_line)
+                    if txt_fp:
+                        txt_fp.write(sum_line + "\n"); txt_fp.flush()
+                if INTERVAL_SUMMARY_EVERY > 0 and frame_no % INTERVAL_SUMMARY_EVERY == 0:
+                    summary_start_frame = frame_no
+                    summary_start_rx_mono = frame_rx_mono
+                    summary_start_dev_tick = dev_tick
+                elif summary_start_rx_mono is None:
+                    summary_start_frame = frame_no
+                    summary_start_rx_mono = frame_rx_mono
+                    summary_start_dev_tick = dev_tick
                 if len_bad and len_bad % 20 == 0:
                     print(f"{now()} WARN LEN_BAD count={len_bad}, check EXPECT_LEN={EXPECT_LEN}")
     finally:
@@ -412,7 +558,21 @@ def main() -> int:
     if COMPARE_MODE not in ("none", "first", "file_loop", "file_seq", "seq"):
         print(f"配置错误：不支持 COMPARE_MODE={COMPARE_MODE}")
         return 2
-    rxq: "queue.Queue[bytes]" = queue.Queue(maxsize=QUEUE_MAX_BLOCKS)
+    tail_skip = effective_fixed_tail_skip()
+    if COMPARE_MODE == "seq" and tail_skip > 0 and tail_skip >= EXPECT_LEN:
+        print(f"配置错误：FIXED_TAIL_SKIP={FIXED_TAIL_SKIP}（有效 skip={tail_skip}）应小于 EXPECT_LEN={EXPECT_LEN}")
+        return 2
+    if DEV_TICK_OFFSET is not None:
+        if DEV_TICK_SIZE not in (1, 2, 4, 8):
+            print(f"配置错误：DEV_TICK_SIZE={DEV_TICK_SIZE} 无效")
+            return 2
+        if DEV_TICK_OFFSET + DEV_TICK_SIZE > EXPECT_LEN:
+            print(f"配置错误：DEV_TICK offset+size 超出 EXPECT_LEN={EXPECT_LEN}")
+            return 2
+        if DEV_TICK_UNIT not in ("us", "ms"):
+            print(f"配置错误：DEV_TICK_UNIT={DEV_TICK_UNIT} 应为 us 或 ms")
+            return 2
+    rxq: "queue.Queue[tuple[bytes, float]]" = queue.Queue(maxsize=QUEUE_MAX_BLOCKS)
     try:
         if USE_RX_THREAD:
             threading.Thread(target=rx_worker, args=(rxq,), daemon=True).start()
@@ -424,7 +584,7 @@ def main() -> int:
             while not STOP.is_set():
                 data = ser.read(READ_SIZE)
                 if data:
-                    rxq.put(data)
+                    rxq.put((data, time.monotonic()))
     except KeyboardInterrupt:
         print("\n用户停止")
     except Exception as e:
