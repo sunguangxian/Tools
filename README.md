@@ -110,6 +110,16 @@ py serial_tools/serial_frame_check.py
 
 ---
 
+## 7. Grok Launcher (`start_grok.bat`)
+在最近使用的目录里启动 Grok。窗口里可以选目录、在 WSL 中启动，以及是否走本机 VPN 代理。
+
+- **运行**: 双击 `start_grok.bat`，或在 `run.bat` 菜单里选 `4`。
+- **配置**: 与脚本同目录的 `grok_launcher.json`（`vpnPort`、`useVpn`、`wsl`、`recentDirs`）。该文件只保存在本机，不进入版本库。
+- **代理**: 只有勾选「使用本机 VPN」时才会设置 `HTTP_PROXY` / `HTTPS_PROXY`。端口默认 `10090`，可在窗口里改。
+- **WSL**: 勾选后会把所选 Windows 目录转成 WSL 路径再执行 `grok`。未勾选时在该目录打开 `cmd` 并运行 `grok`。
+
+---
+
 ## 环境要求
 - **Python 3.x**
 - **标准库**: `tkinter`, `re`, `os`, `subprocess` 等。
