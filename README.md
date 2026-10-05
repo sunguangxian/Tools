@@ -120,11 +120,23 @@ py serial_tools/serial_frame_check.py
 
 ---
 
+## 8. 猫猫云 Clash 配置解密 (`maomaoyun_clash.py`)
+把猫猫云客户端加密的 `config.yaml` 解成明文 Clash/mihomo 配置。
+
+- **依赖**: `py -m pip install cryptography`
+- **默认**: 读取脚本同目录的 `config.yaml`，写出 `config.decrypted.yaml`。
+- **指定路径**: `python maomaoyun_clash.py <加密文件> <明文输出>`
+- **运行**: `python maomaoyun_clash.py`，或在 `run.bat` 菜单里选 `5`。
+- **注意**: 明文里有节点密码。`config.yaml` 和 `config.decrypted.yaml` 已加入 `.gitignore`，不要外传或提交。
+
+---
+
 ## 环境要求
 - **Python 3.x**
 - **标准库**: `tkinter`, `re`, `os`, `subprocess` 等。
 - **第三方库**:
   - 串口工具需安装: `pip install pyserial`
+  - 猫猫云 Clash 解密需安装: `pip install cryptography`
   - 若运行 `lvgl_font_tool.py` 且需要预览字体，可能需要 `pip install Pillow`。
 
 ## 运行方式

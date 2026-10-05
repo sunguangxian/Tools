@@ -165,3 +165,7 @@ cython_debug/
 grok_launcher.json
 grok_launcher_settings.json
 grok_recent_dirs.json
+
+# 猫猫云 Clash 加密订阅与解密结果（含节点密码）
+/config.yaml
+/config.decrypted.yaml

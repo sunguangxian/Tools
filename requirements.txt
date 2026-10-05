@@ -12,3 +12,6 @@ matplotlib>=3.5.0
 # 串口波形显示（PyQtGraph）
 pyqtgraph>=0.13.0
 PyQt5>=5.15.0
+
+# 猫猫云 Clash 配置解密（AES）
+cryptography>=42.0.0
