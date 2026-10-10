@@ -161,7 +161,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Grok Launcher 本机配置（最近目录、VPN 端口）
+# CLI 启动器本机配置（最近目录、VPN 端口、工具选择）
+cli_launcher.json
 grok_launcher.json
 grok_launcher_settings.json
 grok_recent_dirs.json

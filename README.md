@@ -110,13 +110,14 @@ py serial_tools/serial_frame_check.py
 
 ---
 
-## 7. Grok Launcher (`start_grok.bat`)
-在最近使用的目录里启动 Grok。窗口里可以选目录、在 WSL 中启动，以及是否走本机 VPN 代理。
+## 7. CLI 启动器 (`start_grok.bat`)
+在最近使用的目录里启动 Grok、Codex 或 Gemini。窗口里可以选工具、选目录、在 WSL 中启动，以及是否走本机 VPN 代理。
 
 - **运行**: 双击 `start_grok.bat`，或在 `run.bat` 菜单里选 `4`。
-- **配置**: 与脚本同目录的 `grok_launcher.json`（`vpnPort`、`useVpn`、`wsl`、`recentDirs`）。该文件只保存在本机，不进入版本库。
+- **配置**: 与脚本同目录的 `cli_launcher.json`（`vpnPort`、`useVpn`、`wsl`、`tool`、`recentDirs`）。`tool` 为 `grok`、`codex` 或 `gemini`，记住上次的选择。最近目录最多保存 20 个。若目录里还留着旧的 `grok_launcher.json`，第一次启动会把它改名为 `cli_launcher.json`。该文件只保存在本机，不进入版本库。
 - **代理**: 只有勾选「使用本机 VPN」时才会设置 `HTTP_PROXY` / `HTTPS_PROXY`。端口默认 `10090`，可在窗口里改。
-- **WSL**: 勾选后会把所选 Windows 目录转成 WSL 路径再执行 `grok`。未勾选时在该目录打开 `cmd` 并运行 `grok`。
+- **Windows**: Grok 与 Gemini 在所选目录打开 `cmd` 后运行。Codex 由 npm 安装为 `codex.ps1`，`cmd` 无法直接执行，因此用 PowerShell 启动。
+- **WSL**: 勾选后会把所选 Windows 目录转成 WSL 路径，再执行对应命令。优先使用 `$HOME/.grok/bin` 和 `$HOME/.local/bin` 里的 Linux 程序。
 
 ---
 

@@ -8,7 +8,7 @@ echo.
 echo 1. 执行 script1.py
 echo 2. 执行 script2.py
 echo 3. 执行 数据波形生成器.py
-echo 4. 启动 Grok Launcher
+echo 4. 启动 Grok / Codex / Gemini
 echo 5. 猫猫云 Clash 配置解密
 echo 6. 退出
 echo.
