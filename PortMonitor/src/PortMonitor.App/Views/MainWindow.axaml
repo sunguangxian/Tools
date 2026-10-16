@@ -85,36 +85,40 @@
       <DockPanel>
         <TextBlock DockPanel.Dock="Top" Text="会话 / 端口" Classes="section" Margin="10,8,10,4"/>
 
-        <Border DockPanel.Dock="Bottom" Classes="card" Margin="8" Padding="8">
-          <StackPanel Spacing="5">
-            <TextBlock Text="新建会话" Classes="section"/>
-            <Grid ColumnDefinitions="56,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
-              <TextBlock Classes="label" Text="名称"/>
-              <TextBox Grid.Column="1" Text="{Binding NewName}" PlaceholderText="可选"/>
-              <TextBlock Grid.Row="1" Classes="label" Text="模式"/>
-              <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch"
+        <Border DockPanel.Dock="Bottom" Classes="card" Margin="6,4" Padding="6">
+          <StackPanel Spacing="3">
+            <TextBlock Text="新建会话" Classes="section" Margin="0,0,0,0"/>
+            <Grid ColumnDefinitions="40,*,40,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="2" ColumnSpacing="4">
+              <TextBlock Classes="label" Text="名称" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding NewName}" PlaceholderText="可选" MinHeight="26"/>
+              <TextBlock Grid.Column="2" Classes="label" Text="模式" VerticalAlignment="Center"/>
+              <ComboBox Grid.Column="3" HorizontalAlignment="Stretch"
                         ItemsSource="{Binding ModeChoices}" SelectedItem="{Binding NewModeChoice}"/>
-              <TextBlock Grid.Row="2" Classes="label" Text="端口 A"/>
-              <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="4">
+              <TextBlock Grid.Row="1" Classes="label" Text="端口A" VerticalAlignment="Center"/>
+              <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="4">
                 <ComboBox IsEditable="True" HorizontalAlignment="Stretch"
                           ItemsSource="{Binding AvailablePorts}" Text="{Binding NewPortA}"/>
                 <Button Grid.Column="1" Content="⟳" Classes="tool" Command="{Binding RefreshPortsCommand}"/>
               </Grid>
-              <TextBlock Grid.Row="3" Classes="label" Text="端口 B" IsVisible="{Binding NewIsBridge}"/>
-              <ComboBox Grid.Row="3" Grid.Column="1" IsEditable="True" HorizontalAlignment="Stretch"
+              <TextBlock Grid.Row="2" Classes="label" Text="端口B" VerticalAlignment="Center"
+                         IsVisible="{Binding NewIsBridge}"/>
+              <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" IsEditable="True"
+                        HorizontalAlignment="Stretch"
                         ItemsSource="{Binding AvailablePorts}" Text="{Binding NewPortB}"
                         IsVisible="{Binding NewIsBridge}"/>
-              <TextBlock Grid.Row="4" Classes="label" Text="波特率"/>
-              <ComboBox Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch"
+              <TextBlock Grid.Row="3" Classes="label" Text="波特" VerticalAlignment="Center"/>
+              <ComboBox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch"
                         ItemsSource="{Binding BaudRates}" SelectedItem="{Binding NewBaudRate}"/>
-              <TextBlock Grid.Row="5" Classes="label" Text="格式"/>
-              <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Spacing="3">
-                <ComboBox Width="48" ItemsSource="{Binding DataBitsOptions}" SelectedItem="{Binding NewDataBits}"/>
-                <ComboBox Width="64" ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding NewParity}"/>
-                <ComboBox Width="72" ItemsSource="{Binding StopBitsOptions}" SelectedItem="{Binding NewStopBits}"/>
+              <StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="2"
+                          VerticalAlignment="Center">
+                <ComboBox Width="44" ItemsSource="{Binding DataBitsOptions}" SelectedItem="{Binding NewDataBits}"/>
+                <ComboBox Width="56" ItemsSource="{Binding ParityOptions}" SelectedItem="{Binding NewParity}"/>
+                <ComboBox MinWidth="56" HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding StopBitsOptions}" SelectedItem="{Binding NewStopBits}"/>
               </StackPanel>
-              <Button Grid.Row="6" Grid.ColumnSpan="2" Classes="accent" HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Center" Content="＋ 添加会话" Command="{Binding AddSessionCommand}"/>
+              <Button Grid.Row="4" Grid.ColumnSpan="4" Classes="accent" HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center" Content="＋ 添加会话" Command="{Binding AddSessionCommand}"
+                      Padding="8,3" MinHeight="28"/>
             </Grid>
           </StackPanel>
         </Border>
@@ -226,7 +230,7 @@
     <TabControl x:Name="MainTabs" Margin="6" Padding="0">
       <TabItem Header="列表">
         <Grid RowDefinitions="Auto,*" Margin="0,4,0,0">
-          <Grid ColumnDefinitions="48,88,72,48,120,40,*,140" Margin="4,0,4,2">
+          <Grid ColumnDefinitions="48,88,72,48,*,40,*,*" Margin="4,0,4,2">
             <TextBlock Classes="head" Text="#"/>
             <TextBlock Grid.Column="1" Classes="head" Text="时间"/>
             <TextBlock Grid.Column="2" Classes="head" Text="会话"/>
@@ -242,7 +246,7 @@
                    BorderBrush="{StaticResource StBorderBrush}" BorderThickness="1">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:LogEntryViewModel">
-                <Grid ColumnDefinitions="48,88,72,48,120,40,*,140" Margin="0,0">
+                <Grid ColumnDefinitions="48,88,72,48,*,40,*,*" Margin="0,0">
                   <TextBlock Text="{Binding Sequence}" Foreground="{StaticResource StMutedBrush}"/>
                   <TextBlock Grid.Column="1" Text="{Binding Timestamp}" Foreground="{StaticResource StBlueBrush}"/>
                   <TextBlock Grid.Column="2" Text="{Binding Session}" Foreground="{StaticResource StPurpleBrush}" TextTrimming="CharacterEllipsis"/>
@@ -297,7 +301,7 @@
 
       <TabItem Header="Modbus">
         <Grid RowDefinitions="Auto,*" Margin="0,4,0,0">
-          <Grid ColumnDefinitions="44,80,64,44,40,70,44,56,*,160" Margin="4,0,4,2">
+          <Grid ColumnDefinitions="44,80,64,44,40,70,44,56,*,*" Margin="4,0,4,2">
             <TextBlock Classes="head" Text="#"/>
             <TextBlock Grid.Column="1" Classes="head" Text="时间"/>
             <TextBlock Grid.Column="2" Classes="head" Text="会话"/>
@@ -314,7 +318,7 @@
                    BorderBrush="{StaticResource StBorderBrush}" BorderThickness="1">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ModbusFrameViewModel">
-                <Grid ColumnDefinitions="44,80,64,44,40,70,44,56,*,160">
+                <Grid ColumnDefinitions="44,80,64,44,40,70,44,56,*,*">
                   <TextBlock Text="{Binding Sequence}" Foreground="{StaticResource StMutedBrush}"/>
                   <TextBlock Grid.Column="1" Text="{Binding Timestamp}" Foreground="{StaticResource StBlueBrush}"/>
                   <TextBlock Grid.Column="2" Text="{Binding Session}" Foreground="{StaticResource StPurpleBrush}" TextTrimming="CharacterEllipsis"/>

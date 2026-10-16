@@ -50,7 +50,7 @@
     </Border>
 
     <!-- receive * | toolbar Auto | lower fixed -->
-    <Grid RowDefinitions="*,Auto,176" Margin="6,4,6,4">
+    <Grid RowDefinitions="*,Auto,204" Margin="6,4,6,4">
 
       <!-- Receive + Extension -->
       <Grid Grid.Row="0" Name="RecvGrid" ColumnDefinitions="*,0,0" ClipToBounds="True">
@@ -235,32 +235,37 @@
                       Margin="10,0,0,0" />
           </StackPanel>
 
-          <!-- Timestamp / checksum row -->
+          <!-- Timestamp / checksum: two rows so 794×600 does not crush controls -->
           <Border Grid.Row="2" Classes="timestamp-row" ClipToBounds="True">
-            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
-                        MinHeight="26">
-              <CheckBox Content="加时间戳和分包显示" IsChecked="{Binding ShowTimestamp}"
-                        Classes="compact" />
-              <TextBlock Text="超时" Classes="label" Margin="6,0,0,0"
-                         HorizontalAlignment="Left" TextAlignment="Left" />
-              <NumericUpDown Value="{Binding PacketTimeoutMs}"
-                             Minimum="1" Maximum="5000" Width="44" FormatString="0"
-                             Classes="compact-nud" />
-              <TextBlock Text="ms" Classes="label"
-                         HorizontalAlignment="Left" TextAlignment="Left" Margin="0,0,0,0" />
-              <TextBlock Text="第" Classes="label" Margin="8,0,0,0"
-                         HorizontalAlignment="Left" TextAlignment="Left" />
-              <NumericUpDown Value="{Binding CsFrom}"
-                             Minimum="1" Maximum="9999" Width="40" FormatString="0"
-                             Classes="compact-nud" />
-              <TextBlock Text="字节至末尾" Classes="label"
-                         HorizontalAlignment="Left" TextAlignment="Left" />
-              <TextBlock Text="加校验" Classes="label" Margin="8,0,0,0"
-                         HorizontalAlignment="Left" TextAlignment="Left" />
-              <ComboBox ItemsSource="{Binding ChecksumOptions}"
-                        SelectedItem="{Binding SelectedChecksum}"
-                        Width="80" HorizontalAlignment="Left" />
-            </StackPanel>
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="2">
+              <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                          MinHeight="26">
+                <CheckBox Content="加时间戳和分包显示" IsChecked="{Binding ShowTimestamp}"
+                          Classes="compact" />
+                <TextBlock Text="超时" Classes="label" Margin="6,0,0,0"
+                           HorizontalAlignment="Left" TextAlignment="Left" />
+                <NumericUpDown Value="{Binding PacketTimeoutMs}"
+                               Minimum="1" Maximum="5000" Width="52" FormatString="0"
+                               Classes="compact-nud" />
+                <TextBlock Text="ms" Classes="label"
+                           HorizontalAlignment="Left" TextAlignment="Left" />
+              </StackPanel>
+              <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4"
+                          VerticalAlignment="Center" MinHeight="26">
+                <TextBlock Text="第" Classes="label"
+                           HorizontalAlignment="Left" TextAlignment="Left" />
+                <NumericUpDown Value="{Binding CsFrom}"
+                               Minimum="1" Maximum="9999" Width="48" FormatString="0"
+                               Classes="compact-nud" />
+                <TextBlock Text="字节至末尾" Classes="label"
+                           HorizontalAlignment="Left" TextAlignment="Left" />
+                <TextBlock Text="加校验" Classes="label" Margin="8,0,0,0"
+                           HorizontalAlignment="Left" TextAlignment="Left" />
+                <ComboBox ItemsSource="{Binding ChecksumOptions}"
+                          SelectedItem="{Binding SelectedChecksum}"
+                          Width="90" HorizontalAlignment="Left" MinWidth="80" />
+              </StackPanel>
+            </Grid>
           </Border>
 
           <!-- Send edit -->

@@ -187,8 +187,7 @@
             <Setter Property="BorderBrush" Value="#5C5330"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="3"/>
-            <Setter Property="Padding" Value="6,2"/>
-            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="Padding" Value="6,3"/>
         </Style>
         <Style Selector="TextBlock.mono">
             <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New, monospace"/>
