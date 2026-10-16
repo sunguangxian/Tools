@@ -170,3 +170,6 @@ grok_recent_dirs.json
 # 猫猫云 Clash 加密订阅与解密结果（含节点密码）
 /config.yaml
 /config.decrypted.yaml
+
+# 串口帧校验运行日志
+serial_logs/
