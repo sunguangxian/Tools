@@ -4,7 +4,7 @@
 
 ## 主题
 
-与 **端口监视（SerialTap）** 一致：`FluentTheme DensityStyle="Compact"` + `RequestedThemeVariant="Dark"`，色板来自仓库共享库 [`shared/St.Theme`](../shared/St.Theme/)（`avares://St.Theme/Themes/ProfessionalDark.axaml`；`StBg` #1E1E1E、`StAccent` #007ACC、`StPanel` #2D2D30 等）。
+与 **端口监视（PortMonitor）** 一致：`FluentTheme DensityStyle="Compact"` + `RequestedThemeVariant="Dark"`，色板来自仓库共享库 [`shared/St.Theme`](../shared/St.Theme/)（`avares://St.Theme/Themes/ProfessionalDark.axaml`；`StBg` #1E1E1E、`StAccent` #007ACC、`StPanel` #2D2D30 等）。
 
 ## 功能
 

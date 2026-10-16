@@ -1,6 +1,6 @@
 # PythonTools — 嵌入式与数据处理工具集
 
-一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及 Avalonia 桌面应用（SSCOM 串口助手、SerialTap 端口监视）。
+一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及 Avalonia 桌面应用（SSCOM 串口助手、PortMonitor 端口监视）。
 
 仓库：[sunguangxian/Tools](https://github.com/sunguangxian/Tools)
 
@@ -20,7 +20,7 @@
 - [8. 猫猫云 Clash 解密](#8-猫猫云-clash-配置解密-maomaoyun_clashpy)
 - [9. USB 串口挂到 WSL](#9-usb-串口挂到-wsl-usb_serial-wslps1)
 - [10. SSCOM 串口助手](#10-sscom-串口助手-sscom)
-- [11. SerialTap 端口监视](#11-serialtap-端口监视-serialtap)
+- [11. PortMonitor 端口监视](#11-portmonitor-端口监视-portmonitor)
 - [共享 Avalonia 主题](#共享-avalonia-主题-sharedsttheme)
 - [环境与依赖](#环境与依赖)
 - [用 run.bat 启动](#用-runbat-启动)
@@ -61,7 +61,7 @@ Windows 建议用 `py` 启动器；也可用 `python`。
 | 8 | 猫猫云 Clash 解密 | `maomaoyun_clash.py` | CLI |
 | 9 | USB→WSL 串口 | `usb_serial-wsl.ps1` | PowerShell（需 usbipd） |
 | 10 | SSCOM 串口助手 | `sscom/` | Avalonia（C#） |
-| 11 | SerialTap 端口监视 | `SerialTap/` | Avalonia（C#） |
+| 11 | PortMonitor 端口监视 | `PortMonitor/` | Avalonia（C#） |
 
 ---
 
@@ -250,16 +250,16 @@ Avalonia 串口调试助手（布局参考 SSCOM V5.13）。源码在 [`sscom/`]
 dotnet run --project sscom/SscomAvalonia.csproj -c Release
 ```
 
-暗色色板与 SerialTap 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
+暗色色板与 PortMonitor 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
 
 ---
 
-## 11. SerialTap 端口监视 (`SerialTap/`)
+## 11. PortMonitor 端口监视 (`PortMonitor/`)
 
-Avalonia 端口旁路监视（Modbus / USB 等）。解决方案 [`SerialTap/SerialTap.sln`](SerialTap/SerialTap.sln)，说明见 [`SerialTap/README.md`](SerialTap/README.md)。
+Avalonia 端口旁路监视（Modbus / USB 等）。解决方案 [`PortMonitor/PortMonitor.sln`](PortMonitor/PortMonitor.sln)，说明见 [`PortMonitor/README.md`](PortMonitor/README.md)。
 
 ```bash
-dotnet run --project SerialTap/src/SerialTap.App/SerialTap.App.csproj -c Release
+dotnet run --project PortMonitor/src/PortMonitor.App/PortMonitor.App.csproj -c Release
 ```
 
 同样引用 [`shared/St.Theme`](shared/St.Theme/)。发布 exe / Hook DLL 默认不入库。
@@ -268,7 +268,7 @@ dotnet run --project SerialTap/src/SerialTap.App/SerialTap.App.csproj -c Release
 
 ## 共享 Avalonia 主题 (`shared/St.Theme/`)
 
-`ProfessionalDark.axaml`（VS 工具风色板，`StAccent` #007ACC 等）抽成独立类库，供 SSCOM 与 SerialTap 引用：
+`ProfessionalDark.axaml`（VS 工具风色板，`StAccent` #007ACC 等）抽成独立类库，供 SSCOM 与 PortMonitor 引用：
 
 ```xml
 <ProjectReference Include="..\shared\St.Theme\St.Theme.csproj" />
@@ -300,7 +300,7 @@ py -m pip install -r requirements.txt
 LVGL 字体助手另需 Node.js + `lv_font_conv`。  
 USB→WSL 另需本机安装 `usbipd`。
 
-Avalonia 应用另需 **.NET 9+**（SerialTap 为 `net9.0`；sscom 为 `net10.0`，可按本机 SDK 调整）与 Avalonia 12.x NuGet 包（还原时自动拉取）。
+Avalonia 应用另需 **.NET 9+**（PortMonitor 为 `net9.0`；sscom 为 `net10.0`，可按本机 SDK 调整）与 Avalonia 12.x NuGet 包（还原时自动拉取）。
 
 ---
 

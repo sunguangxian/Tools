@@ -149,6 +149,6 @@ public partial class MainWindow : Window
     private void OnAboutClick(object? sender, RoutedEventArgs e)
     {
         ShowMessage("关于",
-            "sscom-avalonia\nAvalonia ProfessionalDark（与端口监视/SerialTap 同款）\n开源串口调试助手（布局参考 SSCOM V5.13）");
+            "sscom-avalonia\nAvalonia ProfessionalDark（与端口监视/PortMonitor 同款）\n开源串口调试助手（布局参考 SSCOM V5.13）");
     }
 }

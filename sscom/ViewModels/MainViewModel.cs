@@ -484,7 +484,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     {
         const string welcome =
             "欢迎使用 sscom-avalonia（开源串口调试助手）\n" +
-            "界面布局参考 SSCOM V5.13，主题为 ProfessionalDark（SerialTap/端口监视同款 VS 深色）。仅支持串口。\n" +
+            "界面布局参考 SSCOM V5.13，主题为 ProfessionalDark（PortMonitor/端口监视同款 VS 深色）。仅支持串口。\n" +
             "\n" +
             "使用提示：\n" +
             "1. 在「端口号」选择串口，设置波特率后点「打开串口」；\n" +

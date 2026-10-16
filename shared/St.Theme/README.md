@@ -1,6 +1,6 @@
 # St.Theme
 
-SerialTap / SSCOM 共用的 Avalonia 暗色色板（Visual Studio 风格 `ProfessionalDark`）。
+PortMonitor / SSCOM 共用的 Avalonia 暗色色板（Visual Studio 风格 `ProfessionalDark`）。
 
 ## 引用
 

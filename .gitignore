@@ -174,7 +174,7 @@ grok_recent_dirs.json
 # 串口帧校验运行日志
 serial_logs/
 
-# --- C# / Avalonia (SerialTap, sscom, shared/St.Theme) ---
+# --- C# / Avalonia (PortMonitor, sscom, shared/St.Theme) ---
 **/bin/
 **/obj/
 **/publish/
