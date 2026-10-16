@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SerialTap.App/SerialTap.App.csproj" />
+    <Project Path="src/SerialTap.Core/SerialTap.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SerialTap.UsbSelfTest/SerialTap.UsbSelfTest.csproj" />
+  </Folder>
+</Solution>

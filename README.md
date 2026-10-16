@@ -1,6 +1,6 @@
 # PythonTools — 嵌入式与数据处理工具集
 
-一组面向嵌入式开发与日常数据处理的 Python / 脚本工具：音频、LVGL 字体、串口、发票查重、CLI 启动等。
+一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及 Avalonia 桌面应用（SSCOM 串口助手、SerialTap 端口监视）。
 
 仓库：[sunguangxian/Tools](https://github.com/sunguangxian/Tools)
 
@@ -19,6 +19,9 @@
 - [7. CLI 启动器](#7-cli-启动器-start_grokbat)
 - [8. 猫猫云 Clash 解密](#8-猫猫云-clash-配置解密-maomaoyun_clashpy)
 - [9. USB 串口挂到 WSL](#9-usb-串口挂到-wsl-usb_serial-wslps1)
+- [10. SSCOM 串口助手](#10-sscom-串口助手-sscom)
+- [11. SerialTap 端口监视](#11-serialtap-端口监视-serialtap)
+- [共享 Avalonia 主题](#共享-avalonia-主题-sharedsttheme)
 - [环境与依赖](#环境与依赖)
 - [用 run.bat 启动](#用-runbat-启动)
 - [协作说明](#协作说明)
@@ -57,6 +60,8 @@ Windows 建议用 `py` 启动器；也可用 `python`。
 | 7 | Grok/Codex/Gemini 启动器 | `start_grok.bat` | Windows |
 | 8 | 猫猫云 Clash 解密 | `maomaoyun_clash.py` | CLI |
 | 9 | USB→WSL 串口 | `usb_serial-wsl.ps1` | PowerShell（需 usbipd） |
+| 10 | SSCOM 串口助手 | `sscom/` | Avalonia（C#） |
+| 11 | SerialTap 端口监视 | `SerialTap/` | Avalonia（C#） |
 
 ---
 
@@ -236,6 +241,45 @@ powershell -ExecutionPolicy Bypass -File .\usb_serial-wsl.ps1
 
 ---
 
+
+## 10. SSCOM 串口助手 (`sscom/`)
+
+Avalonia 串口调试助手（布局参考 SSCOM V5.13）。源码在 [`sscom/`](sscom/)，说明见 [`sscom/README_zh.md`](sscom/README_zh.md)。
+
+```bash
+dotnet run --project sscom/SscomAvalonia.csproj -c Release
+```
+
+暗色色板与 SerialTap 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
+
+---
+
+## 11. SerialTap 端口监视 (`SerialTap/`)
+
+Avalonia 端口旁路监视（Modbus / USB 等）。解决方案 [`SerialTap/SerialTap.sln`](SerialTap/SerialTap.sln)，说明见 [`SerialTap/README.md`](SerialTap/README.md)。
+
+```bash
+dotnet run --project SerialTap/src/SerialTap.App/SerialTap.App.csproj -c Release
+```
+
+同样引用 [`shared/St.Theme`](shared/St.Theme/)。发布 exe / Hook DLL 默认不入库。
+
+---
+
+## 共享 Avalonia 主题 (`shared/St.Theme/`)
+
+`ProfessionalDark.axaml`（VS 工具风色板，`StAccent` #007ACC 等）抽成独立类库，供 SSCOM 与 SerialTap 引用：
+
+```xml
+<ProjectReference Include="..\shared\St.Theme\St.Theme.csproj" />
+<!-- App.axaml -->
+<ResourceInclude Source="avares://St.Theme/Themes/ProfessionalDark.axaml"/>
+```
+
+详见 [`shared/St.Theme/README.md`](shared/St.Theme/README.md)。
+
+---
+
 ## 环境与依赖
 
 - **Python 3.x**（带 tkinter；多数 GUI 工具需要）
@@ -255,6 +299,8 @@ py -m pip install -r requirements.txt
 
 LVGL 字体助手另需 Node.js + `lv_font_conv`。  
 USB→WSL 另需本机安装 `usbipd`。
+
+Avalonia 应用另需 **.NET 9+**（SerialTap 为 `net9.0`；sscom 为 `net10.0`，可按本机 SDK 调整）与 Avalonia 12.x NuGet 包（还原时自动拉取）。
 
 ---
 

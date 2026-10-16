@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>St.Theme</RootNamespace>
+    <AssemblyName>St.Theme</AssemblyName>
+    <Description>Shared Avalonia ProfessionalDark palette for SerialTap / SSCOM</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <AvaloniaResource Include="Themes\**" />
+  </ItemGroup>
+</Project>

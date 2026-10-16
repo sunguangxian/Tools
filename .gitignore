@@ -29,7 +29,7 @@ MANIFEST
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
+# *.manifest  # disabled: conflicts with Avalonia app.manifest
 *.spec
 
 # Installer logs
@@ -173,3 +173,14 @@ grok_recent_dirs.json
 
 # 串口帧校验运行日志
 serial_logs/
+
+# --- C# / Avalonia (SerialTap, sscom, shared/St.Theme) ---
+**/bin/
+**/obj/
+**/publish/
+.vs/
+*.user
+*.suo
+*.nupkg
+# Python template ignores *.manifest; keep Avalonia app manifests
+!**/app.manifest

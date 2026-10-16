@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Visual Studio / tooling dark palette -->
+  <Color x:Key="StBg">#1E1E1E</Color>
+  <Color x:Key="StSidebar">#252526</Color>
+  <Color x:Key="StPanel">#2D2D30</Color>
+  <Color x:Key="StPanel2">#252526</Color>
+  <Color x:Key="StBorder">#3E3E42</Color>
+  <Color x:Key="StBorderSoft">#2B2B2B</Color>
+  <Color x:Key="StAccent">#007ACC</Color>
+  <Color x:Key="StAccentHover">#1C97EA</Color>
+  <Color x:Key="StText">#CCCCCC</Color>
+  <Color x:Key="StTextMuted">#858585</Color>
+  <Color x:Key="StTextBright">#F1F1F1</Color>
+  <Color x:Key="StSelection">#264F78</Color>
+  <Color x:Key="StGreen">#4EC9B0</Color>
+  <Color x:Key="StBlue">#569CD6</Color>
+  <Color x:Key="StYellow">#DCDCAA</Color>
+  <Color x:Key="StOrange">#CE9178</Color>
+  <Color x:Key="StPurple">#C586C0</Color>
+  <Color x:Key="StRed">#F44747</Color>
+  <Color x:Key="StOk">#6A9955</Color>
+  <Color x:Key="StToolbar">#2D2D30</Color>
+  <Color x:Key="StInput">#3C3C3C</Color>
+
+  <SolidColorBrush x:Key="StBgBrush" Color="{StaticResource StBg}"/>
+  <SolidColorBrush x:Key="StSidebarBrush" Color="{StaticResource StSidebar}"/>
+  <SolidColorBrush x:Key="StPanelBrush" Color="{StaticResource StPanel}"/>
+  <SolidColorBrush x:Key="StBorderBrush" Color="{StaticResource StBorder}"/>
+  <SolidColorBrush x:Key="StAccentBrush" Color="{StaticResource StAccent}"/>
+  <SolidColorBrush x:Key="StTextBrush" Color="{StaticResource StText}"/>
+  <SolidColorBrush x:Key="StMutedBrush" Color="{StaticResource StTextMuted}"/>
+  <SolidColorBrush x:Key="StGreenBrush" Color="{StaticResource StGreen}"/>
+  <SolidColorBrush x:Key="StBlueBrush" Color="{StaticResource StBlue}"/>
+  <SolidColorBrush x:Key="StYellowBrush" Color="{StaticResource StYellow}"/>
+  <SolidColorBrush x:Key="StOrangeBrush" Color="{StaticResource StOrange}"/>
+  <SolidColorBrush x:Key="StRedBrush" Color="{StaticResource StRed}"/>
+  <SolidColorBrush x:Key="StPurpleBrush" Color="{StaticResource StPurple}"/>
+  <SolidColorBrush x:Key="StOkBrush" Color="{StaticResource StOk}"/>
+  <SolidColorBrush x:Key="StToolbarBrush" Color="{StaticResource StToolbar}"/>
+  <SolidColorBrush x:Key="StInputBrush" Color="{StaticResource StInput}"/>
+  <SolidColorBrush x:Key="StSelectionBrush" Color="{StaticResource StSelection}"/>
+</ResourceDictionary>
