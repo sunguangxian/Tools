@@ -1,6 +1,6 @@
 # St.Theme
 
-PortMonitor / SSCOM 共用的 Avalonia 暗色色板（Visual Studio 风格 `ProfessionalDark`）。
+早先 Avalonia 界面用的暗色色板（Visual Studio 风格 `ProfessionalDark`）。Qt 版 SSCOM / PortMonitor 不引用它。
 
 ## 引用
 

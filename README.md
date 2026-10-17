@@ -2,7 +2,7 @@
 
 一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及桌面应用（SSCOM 串口助手、PortMonitor 端口监视）。
 
-> **技术栈迁移**：SSCOM / PortMonitor 正逐步用 **C++ Qt6** 重写（骨架见 `sscom-qt/`、`portmonitor-qt/`）。Avalonia 版（`sscom/`、`PortMonitor/`）仍保留可运行；**大功能暂时冻结在 Avalonia**，新开发优先迁往 Qt 骨架。
+> **技术栈**：SSCOM 串口助手是 **C++ Qt6**（`sscom-qt/`）。PortMonitor 端口监视也是 **C++ Qt6**（`portmonitor-qt/`），只做串口、USB 和 USB SCSI。
 
 仓库：[sunguangxian/Tools](https://github.com/sunguangxian/Tools)
 
@@ -21,8 +21,8 @@
 - [7. CLI 启动器](#7-cli-启动器-start_grokbat)
 - [8. 猫猫云 Clash 解密](#8-猫猫云-clash-配置解密-maomaoyun_clashpy)
 - [9. USB 串口挂到 WSL](#9-usb-串口挂到-wsl-usb_serial-wslps1)
-- [10. SSCOM 串口助手](#10-sscom-串口助手-sscom--sscom-qt)
-- [11. PortMonitor 端口监视](#11-portmonitor-端口监视-portmonitor--portmonitor-qt)
+- [10. SSCOM 串口助手](#10-sscom-串口助手-sscom-qt)
+- [11. PortMonitor 端口监视](#11-portmonitor-端口监视-portmonitor-qt)
 - [共享 Avalonia 主题](#共享-avalonia-主题-sharedsttheme)
 - [环境与依赖](#环境与依赖)
 - [用 run.bat 启动](#用-runbat-启动)
@@ -62,8 +62,8 @@ Windows 建议用 `py` 启动器；也可用 `python`。
 | 7 | Grok/Codex/Gemini 启动器 | `start_grok.bat` | Windows |
 | 8 | 猫猫云 Clash 解密 | `maomaoyun_clash.py` | CLI |
 | 9 | USB→WSL 串口 | `usb_serial-wsl.ps1` | PowerShell（需 usbipd） |
-| 10 | SSCOM 串口助手 | `sscom/`（Avalonia）· `sscom-qt/`（Qt6 骨架） | C# / C++ |
-| 11 | PortMonitor 端口监视 | `PortMonitor/`（Avalonia）· `portmonitor-qt/`（Qt6 骨架） | C# / C++ |
+| 10 | SSCOM 串口助手 | `sscom-qt/` | C++ / Qt6 |
+| 11 | PortMonitor 端口监视 | `portmonitor-qt/` | C++ / Qt6 |
 
 ---
 
@@ -244,43 +244,34 @@ powershell -ExecutionPolicy Bypass -File .\usb_serial-wsl.ps1
 ---
 
 
-## 10. SSCOM 串口助手 (`sscom/` · `sscom-qt/`)
+## 10. SSCOM 串口助手 (`sscom-qt/`)
 
-- **Avalonia（仍可运行）**：[`sscom/`](sscom/)，说明见 [`sscom/README_zh.md`](sscom/README_zh.md)。大功能暂时冻结。
-- **Qt6 骨架（重写方向）**：[`sscom-qt/`](sscom-qt/)，主窗口壳已搭，串口逻辑待迁。构建见该目录 README。
+Qt6 串口调试助手，布局和功能参考 SSCOM V5.13.1：**仅串口**（无 TCP/IP）。说明与构建见 [`sscom-qt/README.md`](sscom-qt/README.md)。
 
 ```bash
-# Avalonia
-dotnet run --project sscom/SscomAvalonia.csproj -c Release
-
-# Qt6 骨架
-cmake -S sscom-qt -B sscom-qt/build -DCMAKE_BUILD_TYPE=Release && cmake --build sscom-qt/build -j
+cmake -S sscom-qt -B sscom-qt/build -DCMAKE_BUILD_TYPE=Release
+cmake --build sscom-qt/build -j
 ```
 
-Avalonia 暗色色板与 PortMonitor 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
+**不在** `run.bat` 菜单中（非 Python）。Windows 上把 `CMAKE_PREFIX_PATH` 指到本机 Qt6。
 
 ---
 
-## 11. PortMonitor 端口监视 (`PortMonitor/` · `portmonitor-qt/`)
+## 11. PortMonitor 端口监视 (`portmonitor-qt/`)
 
-- **Avalonia（仍可运行）**：[`PortMonitor/`](PortMonitor/)，说明见 [`PortMonitor/README.md`](PortMonitor/README.md)。大功能暂时冻结。
-- **Qt6 骨架（重写方向）**：[`portmonitor-qt/`](portmonitor-qt/)（与 Avalonia 目录并列，非嵌套），会话列表 + 日志表壳已搭。构建见该目录 README。
+Qt6 程序，只监视 **串口**、**USB**、**USB SCSI**。深色界面：设备树、数据表 / 行视图 / 终端 / 转储 / SCSI、底部 HEX。不需要注册或登录，也不附带内核驱动。
 
-```bash
-# Avalonia
-dotnet run --project PortMonitor/src/PortMonitor.App/PortMonitor.App.csproj -c Release
+- 串口是独占打开（默认 115200 8N1）。端口已被其它程序占用时无法旁路监听。
+- USB 实时抓包依赖本机 [USBPcap](https://desowin.org/usbpcap/)，并且要以管理员身份运行。
+- SCSI 只解码 Bulk-Only。离线可打开 `.pcap` / `.pcapng`，示例在 `portmonitor-qt/samples/usb-msc-sample.pcap`。
 
-# Qt6 骨架
-cmake -S portmonitor-qt -B portmonitor-qt/build -DCMAKE_BUILD_TYPE=Release && cmake --build portmonitor-qt/build -j
-```
-
-Avalonia 版引用 [`shared/St.Theme`](shared/St.Theme/)。发布 exe / Hook DLL 默认不入库。
+说明与构建见 [`portmonitor-qt/README.md`](portmonitor-qt/README.md)。**不在** `run.bat` 菜单中。
 
 ---
 
 ## 共享 Avalonia 主题 (`shared/St.Theme/`)
 
-`ProfessionalDark.axaml`（VS 工具风色板，`StAccent` #007ACC 等）抽成独立类库，供 SSCOM 与 PortMonitor 引用：
+`ProfessionalDark.axaml`（VS 工具风色板，`StAccent` #007ACC 等）是早先 Avalonia 界面用的色板。现在的 Qt 版 SSCOM / PortMonitor 不引用它。
 
 ```xml
 <ProjectReference Include="..\shared\St.Theme\St.Theme.csproj" />
@@ -312,9 +303,7 @@ py -m pip install -r requirements.txt
 LVGL 字体助手另需 Node.js + `lv_font_conv`。  
 USB→WSL 另需本机安装 `usbipd`。
 
-Avalonia 应用另需 **.NET 9+**（PortMonitor 为 `net9.0`；sscom 为 `net10.0`，可按本机 SDK 调整）与 Avalonia 12.x NuGet 包（还原时自动拉取）。
-
-Qt6 骨架另需 **CMake ≥ 3.16**、**Qt 6**（Widgets）与 C++17 编译器（MSVC / GCC / Clang）；详见 `sscom-qt/README.md`、`portmonitor-qt/README.md`。
+SSCOM 与 PortMonitor 的 Qt 工程需 **CMake ≥ 3.16**、**Qt 6**（Widgets、SerialPort）与 C++17 编译器（MSVC / GCC / Clang）。详见 `sscom-qt/README.md`、`portmonitor-qt/README.md`。
 
 ---
 
