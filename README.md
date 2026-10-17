@@ -1,6 +1,8 @@
 # PythonTools — 嵌入式与数据处理工具集
 
-一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及 Avalonia 桌面应用（SSCOM 串口助手、PortMonitor 端口监视）。
+一组面向嵌入式开发与日常数据处理的工具集：Python 脚本（音频、LVGL 字体、串口、发票查重、CLI 启动等），以及桌面应用（SSCOM 串口助手、PortMonitor 端口监视）。
+
+> **技术栈迁移**：SSCOM / PortMonitor 正逐步用 **C++ Qt6** 重写（骨架见 `sscom-qt/`、`portmonitor-qt/`）。Avalonia 版（`sscom/`、`PortMonitor/`）仍保留可运行；**大功能暂时冻结在 Avalonia**，新开发优先迁往 Qt 骨架。
 
 仓库：[sunguangxian/Tools](https://github.com/sunguangxian/Tools)
 
@@ -19,8 +21,8 @@
 - [7. CLI 启动器](#7-cli-启动器-start_grokbat)
 - [8. 猫猫云 Clash 解密](#8-猫猫云-clash-配置解密-maomaoyun_clashpy)
 - [9. USB 串口挂到 WSL](#9-usb-串口挂到-wsl-usb_serial-wslps1)
-- [10. SSCOM 串口助手](#10-sscom-串口助手-sscom)
-- [11. PortMonitor 端口监视](#11-portmonitor-端口监视-portmonitor)
+- [10. SSCOM 串口助手](#10-sscom-串口助手-sscom--sscom-qt)
+- [11. PortMonitor 端口监视](#11-portmonitor-端口监视-portmonitor--portmonitor-qt)
 - [共享 Avalonia 主题](#共享-avalonia-主题-sharedsttheme)
 - [环境与依赖](#环境与依赖)
 - [用 run.bat 启动](#用-runbat-启动)
@@ -60,8 +62,8 @@ Windows 建议用 `py` 启动器；也可用 `python`。
 | 7 | Grok/Codex/Gemini 启动器 | `start_grok.bat` | Windows |
 | 8 | 猫猫云 Clash 解密 | `maomaoyun_clash.py` | CLI |
 | 9 | USB→WSL 串口 | `usb_serial-wsl.ps1` | PowerShell（需 usbipd） |
-| 10 | SSCOM 串口助手 | `sscom/` | Avalonia（C#） |
-| 11 | PortMonitor 端口监视 | `PortMonitor/` | Avalonia（C#） |
+| 10 | SSCOM 串口助手 | `sscom/`（Avalonia）· `sscom-qt/`（Qt6 骨架） | C# / C++ |
+| 11 | PortMonitor 端口监视 | `PortMonitor/`（Avalonia）· `portmonitor-qt/`（Qt6 骨架） | C# / C++ |
 
 ---
 
@@ -242,27 +244,37 @@ powershell -ExecutionPolicy Bypass -File .\usb_serial-wsl.ps1
 ---
 
 
-## 10. SSCOM 串口助手 (`sscom/`)
+## 10. SSCOM 串口助手 (`sscom/` · `sscom-qt/`)
 
-Avalonia 串口调试助手（布局参考 SSCOM V5.13）。源码在 [`sscom/`](sscom/)，说明见 [`sscom/README_zh.md`](sscom/README_zh.md)。
+- **Avalonia（仍可运行）**：[`sscom/`](sscom/)，说明见 [`sscom/README_zh.md`](sscom/README_zh.md)。大功能暂时冻结。
+- **Qt6 骨架（重写方向）**：[`sscom-qt/`](sscom-qt/)，主窗口壳已搭，串口逻辑待迁。构建见该目录 README。
 
 ```bash
+# Avalonia
 dotnet run --project sscom/SscomAvalonia.csproj -c Release
+
+# Qt6 骨架
+cmake -S sscom-qt -B sscom-qt/build -DCMAKE_BUILD_TYPE=Release && cmake --build sscom-qt/build -j
 ```
 
-暗色色板与 PortMonitor 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
+Avalonia 暗色色板与 PortMonitor 共用 [`shared/St.Theme`](shared/St.Theme/)。**不在** `run.bat` 菜单中（非 Python）。
 
 ---
 
-## 11. PortMonitor 端口监视 (`PortMonitor/`)
+## 11. PortMonitor 端口监视 (`PortMonitor/` · `portmonitor-qt/`)
 
-Avalonia 端口旁路监视（Modbus / USB 等）。解决方案 [`PortMonitor/PortMonitor.sln`](PortMonitor/PortMonitor.sln)，说明见 [`PortMonitor/README.md`](PortMonitor/README.md)。
+- **Avalonia（仍可运行）**：[`PortMonitor/`](PortMonitor/)，说明见 [`PortMonitor/README.md`](PortMonitor/README.md)。大功能暂时冻结。
+- **Qt6 骨架（重写方向）**：[`portmonitor-qt/`](portmonitor-qt/)（与 Avalonia 目录并列，非嵌套），会话列表 + 日志表壳已搭。构建见该目录 README。
 
 ```bash
+# Avalonia
 dotnet run --project PortMonitor/src/PortMonitor.App/PortMonitor.App.csproj -c Release
+
+# Qt6 骨架
+cmake -S portmonitor-qt -B portmonitor-qt/build -DCMAKE_BUILD_TYPE=Release && cmake --build portmonitor-qt/build -j
 ```
 
-同样引用 [`shared/St.Theme`](shared/St.Theme/)。发布 exe / Hook DLL 默认不入库。
+Avalonia 版引用 [`shared/St.Theme`](shared/St.Theme/)。发布 exe / Hook DLL 默认不入库。
 
 ---
 
@@ -301,6 +313,8 @@ LVGL 字体助手另需 Node.js + `lv_font_conv`。
 USB→WSL 另需本机安装 `usbipd`。
 
 Avalonia 应用另需 **.NET 9+**（PortMonitor 为 `net9.0`；sscom 为 `net10.0`，可按本机 SDK 调整）与 Avalonia 12.x NuGet 包（还原时自动拉取）。
+
+Qt6 骨架另需 **CMake ≥ 3.16**、**Qt 6**（Widgets）与 C++17 编译器（MSVC / GCC / Clang）；详见 `sscom-qt/README.md`、`portmonitor-qt/README.md`。
 
 ---
 
