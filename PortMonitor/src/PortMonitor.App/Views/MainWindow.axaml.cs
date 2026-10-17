@@ -1,5 +1,8 @@
 using System.Collections.Specialized;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
@@ -12,6 +15,7 @@ public partial class MainWindow : Window
     private INotifyCollectionChanged? _logSub;
     private INotifyCollectionChanged? _modbusSub;
     private INotifyCollectionChanged? _lineSub;
+    private string? _screenshotPath;
 
     public MainWindow()
     {
@@ -84,6 +88,27 @@ public partial class MainWindow : Window
 
         if (args.Contains("--demo") || Environment.GetEnvironmentVariable("SERIALTAP_DEMO") == "1")
             vm.StartDemoTraffic();
+
+        if (_screenshotPath != null)
+        {
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await Task.Delay(700);
+                CaptureTo(_screenshotPath!);
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desk)
+                    desk.Shutdown();
+            }, DispatcherPriority.Background);
+        }
+    }
+
+    public void ArmScreenshot(string path) => _screenshotPath = path;
+
+    private void CaptureTo(string path)
+    {
+        var size = new PixelSize(Math.Max(1, (int)Bounds.Width), Math.Max(1, (int)Bounds.Height));
+        using var bmp = new RenderTargetBitmap(size, new Vector(96, 96));
+        bmp.Render(this);
+        bmp.Save(path);
     }
 
     private async void OnOpenPcapClick(object? sender, RoutedEventArgs e)

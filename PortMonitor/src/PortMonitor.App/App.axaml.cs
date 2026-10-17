@@ -8,6 +8,8 @@ namespace PortMonitor.App;
 
 public partial class App : Application
 {
+    public static string[] StartupArgs { get; set; } = System.Array.Empty<string>();
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -17,10 +19,22 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var win = new MainWindow
             {
                 DataContext = new MainViewModel(),
             };
+
+            string? shot = null;
+            var args = StartupArgs.Length > 0 ? StartupArgs : System.Environment.GetCommandLineArgs();
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--screenshot" && i + 1 < args.Length)
+                    shot = args[++i];
+            }
+            if (shot != null)
+                win.ArmScreenshot(shot);
+
+            desktop.MainWindow = win;
         }
 
         base.OnFrameworkInitializationCompleted();

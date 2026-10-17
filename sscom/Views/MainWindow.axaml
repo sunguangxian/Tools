@@ -38,7 +38,7 @@
 
     <Border DockPanel.Dock="Bottom"
             Background="{StaticResource StToolbarBrush}"
-            Padding="8,3" BorderThickness="0,1,0,0"
+            Padding="8,2" BorderThickness="0,1,0,0"
             BorderBrush="{StaticResource StBorderBrush}">
       <Grid ColumnDefinitions="*,Auto,Auto">
         <TextBlock Text="{Binding StatusLeft}" VerticalAlignment="Center" Classes="muted" />
@@ -50,7 +50,7 @@
     </Border>
 
     <!-- receive * | toolbar Auto | lower fixed -->
-    <Grid RowDefinitions="*,Auto,204" Margin="6,4,6,4">
+    <Grid RowDefinitions="*,Auto,204" Margin="5,3,5,3">
 
       <!-- Receive + Extension -->
       <Grid Grid.Row="0" Name="RecvGrid" ColumnDefinitions="*,0,0" ClipToBounds="True">

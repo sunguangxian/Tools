@@ -14,6 +14,7 @@
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
+        <!-- Avalonia Fluent compact density (DensityStyle, not DensityMode) -->
         <FluentTheme DensityStyle="Compact" />
 
         <Style Selector="Window">
@@ -50,7 +51,7 @@
         </Style>
         <Style Selector="Button">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Padding" Value="8,3"/>
             <Setter Property="MinHeight" Value="26"/>
             <Setter Property="CornerRadius" Value="3"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -187,7 +188,7 @@
             <Setter Property="BorderBrush" Value="#5C5330"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="3"/>
-            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Padding" Value="6,2"/>
         </Style>
         <Style Selector="TextBlock.mono">
             <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New, monospace"/>

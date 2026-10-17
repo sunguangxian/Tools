@@ -10,6 +10,7 @@ sealed class Program
     public static void Main(string[] args)
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        App.StartupArgs = args;
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

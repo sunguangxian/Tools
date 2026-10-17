@@ -14,7 +14,7 @@
 
   <DockPanel>
     <!-- Menu -->
-    <Menu DockPanel.Dock="Top" Background="{StaticResource StToolbarBrush}" Padding="4,2">
+    <Menu DockPanel.Dock="Top" Background="{StaticResource StToolbarBrush}" Padding="4,1">
       <MenuItem Header="文件(_F)">
         <MenuItem Header="保存会话…" Command="{Binding SaveSessionCommand}"/>
         <MenuItem Header="加载会话…" Command="{Binding LoadSessionCommand}"/>
@@ -49,7 +49,7 @@
 
     <!-- Icon toolbar -->
     <Border DockPanel.Dock="Top" Background="{StaticResource StToolbarBrush}"
-            BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+            BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,0,0,1" Padding="6,3">
       <StackPanel Orientation="Horizontal" Spacing="4">
         <Button Classes="tool" Content="＋会话" Command="{Binding FocusNewSessionCommand}" ToolTip.Tip="添加会话"/>
         <Button Classes="tool" Content="▶ 打开" Command="{Binding OpenSelectedCommand}" ToolTip.Tip="打开选中会话"/>
@@ -69,7 +69,7 @@
     </Border>
 
     <!-- Status bar -->
-    <Border DockPanel.Dock="Bottom" Background="{StaticResource StToolbarBrush}" Padding="10,4"
+    <Border DockPanel.Dock="Bottom" Background="{StaticResource StToolbarBrush}" Padding="8,3"
             BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,1,0,0">
       <Grid ColumnDefinitions="*,Auto">
         <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource StTextBrush}"
@@ -83,9 +83,9 @@
     <Border DockPanel.Dock="Left" Width="300" Background="{StaticResource StSidebarBrush}"
             BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,0,1,0">
       <DockPanel>
-        <TextBlock DockPanel.Dock="Top" Text="会话 / 端口" Classes="section" Margin="10,8,10,4"/>
+        <TextBlock DockPanel.Dock="Top" Text="会话 / 端口" Classes="section" Margin="8,6,8,2"/>
 
-        <Border DockPanel.Dock="Bottom" Classes="card" Margin="6,4" Padding="6">
+        <Border DockPanel.Dock="Bottom" Classes="card" Margin="6,3" Padding="5">
           <StackPanel Spacing="3">
             <TextBlock Text="新建会话" Classes="section" Margin="0,0,0,0"/>
             <Grid ColumnDefinitions="40,*,40,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="2" ColumnSpacing="4">
@@ -118,14 +118,14 @@
               </StackPanel>
               <Button Grid.Row="4" Grid.ColumnSpan="4" Classes="accent" HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Center" Content="＋ 添加会话" Command="{Binding AddSessionCommand}"
-                      Padding="8,3" MinHeight="28"/>
+                      Padding="8,2" MinHeight="26"/>
             </Grid>
           </StackPanel>
         </Border>
 
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="8,0,8,6">
-          <Button Content="全部打开" Command="{Binding OpenAllCommand}" Padding="8,3"/>
-          <Button Content="全部关闭" Command="{Binding CloseAllCommand}" Padding="8,3"/>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="8,0,8,4">
+          <Button Content="全部打开" Command="{Binding OpenAllCommand}" Padding="8,2"/>
+          <Button Content="全部关闭" Command="{Binding CloseAllCommand}" Padding="8,2"/>
         </StackPanel>
 
         <TreeView Margin="4,0" ItemsSource="{Binding TreeRoots}" SelectedItem="{Binding SelectedTreeNode}">
@@ -147,7 +147,7 @@
     </Border>
 
     <!-- Filter bar -->
-    <Border DockPanel.Dock="Top" Background="{StaticResource StPanelBrush}" Padding="8,5"
+    <Border DockPanel.Dock="Top" Background="{StaticResource StPanelBrush}" Padding="6,4"
             BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,0,0,1">
       <StackPanel Spacing="4">
         <WrapPanel ItemSpacing="6" LineSpacing="4">
@@ -177,13 +177,13 @@
             BorderBrush="{StaticResource StBorderBrush}" BorderThickness="0,1,0,0">
       <TabControl Padding="0" x:Name="BottomTabs">
         <TabItem Header="数据详情">
-          <Grid ColumnDefinitions="*,220" Margin="8">
+          <Grid ColumnDefinitions="*,220" Margin="6">
             <Grid RowDefinitions="Auto,*" Margin="0,0,8,0">
               <TextBlock Classes="muted" Text="HEX / 文本"/>
               <TextBox Grid.Row="1" Classes="mono" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
                        Text="{Binding DetailHex}" Background="{StaticResource StBgBrush}"/>
             </Grid>
-            <Border Grid.Column="1" Classes="card" Padding="8">
+            <Border Grid.Column="1" Classes="card" Padding="6">
               <StackPanel Spacing="3">
                 <TextBlock Classes="muted" Text="{Binding DetailMeta}"/>
                 <TextBlock Classes="mono" Text="{Binding DetailAscii}" TextWrapping="Wrap" Foreground="{StaticResource StGreenBrush}"/>
@@ -192,7 +192,7 @@
           </Grid>
         </TabItem>
         <TabItem Header="发送" x:Name="SendTab">
-          <Grid ColumnDefinitions="*,Auto" Margin="8" ColumnSpacing="8">
+          <Grid ColumnDefinitions="*,Auto" Margin="6" ColumnSpacing="6">
             <StackPanel Spacing="4">
               <TextBlock Classes="muted" Text="向选中会话注入（HEX 空格分隔，或勾选文本）"/>
               <TextBox Classes="mono" AcceptsReturn="True" Height="70" Text="{Binding SendPayload}"
@@ -209,7 +209,7 @@
           </Grid>
         </TabItem>
         <TabItem Header="统计">
-          <TextBlock Margin="12" Classes="mono" Text="{Binding StatsDetail}" TextWrapping="Wrap"/>
+          <TextBlock Margin="8" Classes="mono" Text="{Binding StatsDetail}" TextWrapping="Wrap"/>
         </TabItem>
         <TabItem Header="端口事件">
           <ListBox ItemsSource="{Binding PortEvents}" FontFamily="Consolas, monospace" FontSize="11">
@@ -221,7 +221,7 @@
           </ListBox>
         </TabItem>
         <TabItem Header="注入（说明）">
-          <TextBlock Margin="12" TextWrapping="Wrap" Text="{Binding InjectHelpText}" Classes="muted"/>
+          <TextBlock Margin="8" TextWrapping="Wrap" Text="{Binding InjectHelpText}" Classes="muted"/>
         </TabItem>
       </TabControl>
     </Border>
@@ -338,7 +338,7 @@
 
       <TabItem Header="USB / SCSI">
         <DockPanel Margin="0,4,0,0" DataContext="{Binding Usb}" x:DataType="vm:UsbMonitorViewModel">
-          <Border DockPanel.Dock="Top" Classes="card" Padding="8" Margin="0,0,0,6">
+          <Border DockPanel.Dock="Top" Classes="card" Padding="6" Margin="0,0,0,4">
             <StackPanel Spacing="4">
               <WrapPanel ItemSpacing="6" LineSpacing="4">
                 <TextBlock Classes="label" Text="USBPcapCMD"/>

@@ -184,3 +184,8 @@ serial_logs/
 *.nupkg
 # Python template ignores *.manifest; keep Avalonia app manifests
 !**/app.manifest
+
+# Avalonia layout preview shots (generated under repo root; keep local only)
+/tools-sscom-main.png
+/tools-sscom-ext.png
+/tools-portmonitor-main.png

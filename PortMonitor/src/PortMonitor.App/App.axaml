@@ -14,6 +14,7 @@
     </ResourceDictionary>
   </Application.Resources>
   <Application.Styles>
+    <!-- Avalonia Fluent compact density (DensityStyle, not DensityMode) -->
     <FluentTheme DensityStyle="Compact" />
     <Style Selector="Window">
       <Setter Property="FontFamily" Value="Inter, Microsoft YaHei UI, Segoe UI, sans-serif"/>
@@ -23,6 +24,7 @@
     <Style Selector="TextBlock">
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="Foreground" Value="{StaticResource StTextBrush}"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
     <Style Selector="TextBlock.muted">
       <Setter Property="Foreground" Value="{StaticResource StMutedBrush}"/>
@@ -45,19 +47,26 @@
     </Style>
     <Style Selector="Button">
       <Setter Property="FontSize" Value="12"/>
-      <Setter Property="Padding" Value="10,4"/>
+      <Setter Property="Padding" Value="8,3"/>
       <Setter Property="MinHeight" Value="26"/>
       <Setter Property="CornerRadius" Value="3"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button.accent">
       <Setter Property="Background" Value="{StaticResource StAccentBrush}"/>
       <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style Selector="Button.tool">
-      <Setter Property="Padding" Value="8,4"/>
+      <Setter Property="Padding" Value="6,2"/>
       <Setter Property="MinWidth" Value="28"/>
+      <Setter Property="MinHeight" Value="26"/>
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#3E3E42"/>
@@ -65,23 +74,36 @@
     <Style Selector="TextBox">
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="MinHeight" Value="26"/>
-      <Setter Property="Padding" Value="6,3"/>
+      <Setter Property="Padding" Value="6,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="ComboBox">
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="MinHeight" Value="26"/>
-      <Setter Property="Padding" Value="6,2"/>
+      <Setter Property="Height" Value="26"/>
+      <Setter Property="MaxHeight" Value="26"/>
+      <Setter Property="Padding" Value="6,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
     </Style>
     <Style Selector="CheckBox">
       <Setter Property="FontSize" Value="12"/>
+      <Setter Property="MinHeight" Value="26"/>
+      <Setter Property="MaxHeight" Value="26"/>
+      <Setter Property="Height" Value="26"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Padding" Value="4,0,0,0"/>
     </Style>
     <Style Selector="TabControl">
       <Setter Property="FontSize" Value="12"/>
     </Style>
     <Style Selector="TabItem">
       <Setter Property="FontSize" Value="12"/>
-      <Setter Property="Padding" Value="10,4"/>
-      <Setter Property="MinHeight" Value="28"/>
+      <Setter Property="Padding" Value="8,3"/>
+      <Setter Property="MinHeight" Value="26"/>
     </Style>
     <Style Selector="ListBox">
       <Setter Property="FontSize" Value="12"/>
@@ -99,8 +121,8 @@
     </Style>
     <Style Selector="TreeViewItem">
       <Setter Property="FontSize" Value="12"/>
-      <Setter Property="MinHeight" Value="22"/>
-      <Setter Property="Padding" Value="2,1"/>
+      <Setter Property="MinHeight" Value="20"/>
+      <Setter Property="Padding" Value="2,0"/>
     </Style>
     <Style Selector="Menu">
       <Setter Property="FontSize" Value="12"/>
@@ -122,6 +144,8 @@
     <Style Selector="TextBox.mono">
       <Setter Property="FontFamily" Value="Consolas, Cascadia Mono, Courier New, monospace"/>
       <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Padding" Value="6,4"/>
+      <Setter Property="MinHeight" Value="26"/>
     </Style>
   </Application.Styles>
 </Application>
