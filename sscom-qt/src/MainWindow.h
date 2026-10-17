@@ -1,24 +1,40 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QSerialPort>
 
 class QComboBox;
 class QPushButton;
 class QCheckBox;
 class QPlainTextEdit;
-class QLineEdit;
 class QSpinBox;
 class QLabel;
 
-/// Minimal serial-debugger shell (receive / send / port params).
-/// Logic stubs only — Avalonia sscom/ remains the working app for now.
+/// Serial debugger: enumerate / open / close / RX / TX.
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+
+private slots:
+    void refreshPorts();
+    void toggleOpen();
+    void onReadyRead();
+    void onSend();
+    void onClearReceive();
+    void onSerialError(QSerialPort::SerialPortError error);
 
 private:
     void buildUi();
+    void setPortParamsEnabled(bool enabled);
+    void appendReceive(const QByteArray &data);
+    QByteArray parseHexInput(const QString &text, QString *error) const;
+    QSerialPort::DataBits dataBitsFromUi() const;
+    QSerialPort::Parity parityFromUi() const;
+    QSerialPort::StopBits stopBitsFromUi() const;
+
+    QSerialPort *m_serial = nullptr;
 
     QPlainTextEdit *m_receiveEdit = nullptr;
     QPlainTextEdit *m_sendEdit = nullptr;
@@ -27,6 +43,7 @@ private:
     QComboBox *m_dataBitsCombo = nullptr;
     QComboBox *m_parityCombo = nullptr;
     QComboBox *m_stopBitsCombo = nullptr;
+    QPushButton *m_btnRefresh = nullptr;
     QPushButton *m_btnOpen = nullptr;
     QPushButton *m_btnSend = nullptr;
     QPushButton *m_btnClearRecv = nullptr;
